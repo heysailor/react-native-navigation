@@ -1,7 +1,10 @@
+/*eslint-disable*/
 import React from 'react';
-import { AppRegistry } from 'react-native';
-import platformSpecific from './platformSpecific';
+import {AppRegistry} from 'react-native';
+import platformSpecific from './deprecated/platformSpecificDeprecated';
 import Screen from './Screen';
+
+import PropRegistry from './PropRegistry';
 
 const registeredScreens = {};
 
@@ -24,9 +27,23 @@ function _registerComponentNoRedux(screenID, generator) {
     return class extends Screen {
       static navigatorStyle = InternalComponent.navigatorStyle || {};
       static navigatorButtons = InternalComponent.navigatorButtons || {};
+
+      constructor(props) {
+        super(props);
+        this.state = {
+          internalProps: {...props, ...PropRegistry.load(props.screenInstanceID)}
+        }
+      }
+
+      componentWillReceiveProps(nextProps) {
+        this.setState({
+          internalProps: {...PropRegistry.load(this.props.screenInstanceID), ...nextProps}
+        })
+      }
+
       render() {
         return (
-          <InternalComponent navigator={this.navigator} {...this.props} />
+          <InternalComponent navigator={this.navigator} {...this.state.internalProps} />
         );
       }
     };
@@ -41,10 +58,24 @@ function _registerComponentRedux(screenID, generator, store, Provider, client) {
     return class extends Screen {
       static navigatorStyle = InternalComponent.navigatorStyle || {};
       static navigatorButtons = InternalComponent.navigatorButtons || {};
+
+      constructor(props) {
+        super(props);
+        this.state = {
+          internalProps: {...props, ...PropRegistry.load(props.screenInstanceID)}
+        }
+      }
+
+      componentWillReceiveProps(nextProps) {
+        this.setState({
+          internalProps: {...PropRegistry.load(this.props.screenInstanceID), ...nextProps}
+        })
+      }
+
       render() {
         return (
           <Provider store={store} client={client}>
-            <InternalComponent navigator={this.navigator} {...this.props} />
+            <InternalComponent navigator={this.navigator} {...this.state.internalProps} />
           </Provider>
         );
       }
@@ -57,8 +88,8 @@ function _registerComponentRedux(screenID, generator, store, Provider, client) {
 function getRegisteredScreen(screenID) {
   const generator = registeredScreens[screenID];
   if (!generator) {
-    console.error('Navigation.getRegisteredScreen: ' + screenID + ' used but not yet registered');
-    return;
+    console.error(`Navigation.getRegisteredScreen: ${screenID} used but not yet registered`);
+    return undefined;
   }
   return generator();
 }
@@ -83,15 +114,32 @@ function dismissLightBox(params = {}) {
   return platformSpecific.dismissLightBox(params);
 }
 
+function showInAppNotification(params = {}) {
+  return platformSpecific.showInAppNotification(params);
+}
+
+function dismissInAppNotification(params = {}) {
+  return platformSpecific.dismissInAppNotification(params);
+}
+
+function startTabBasedApp(params) {
+  return platformSpecific.startTabBasedApp(params);
+}
+
+function startSingleScreenApp(params) {
+  return platformSpecific.startSingleScreenApp(params);
+}
+
 export default {
-  registerScreen,
   getRegisteredScreen,
   registerComponent,
-  showModal,
-  dismissModal,
-  dismissAllModals,
-  showLightBox,
-  dismissLightBox,
-  startTabBasedApp: platformSpecific.startTabBasedApp,
-  startSingleScreenApp: platformSpecific.startSingleScreenApp
-}
+  showModal: showModal,
+  dismissModal: dismissModal,
+  dismissAllModals: dismissAllModals,
+  showLightBox: showLightBox,
+  dismissLightBox: dismissLightBox,
+  showInAppNotification: showInAppNotification,
+  dismissInAppNotification: dismissInAppNotification,
+  startTabBasedApp: startTabBasedApp,
+  startSingleScreenApp: startSingleScreenApp
+};

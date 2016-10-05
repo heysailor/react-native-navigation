@@ -1,27 +1,8 @@
-import React, {Component} from 'react';
-import {
-  AppRegistry,
-  View
-} from 'react-native';
-import { Navigation } from 'react-native-navigation';
+import {Navigation} from 'react-native-navigation';
 
 // screen related book keeping
-import { registerScreens } from './screens';
+import {registerScreens} from './screens';
 registerScreens();
-
-AppRegistry.registerComponent('App', () => App);
-
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <View />
-    );
-  }
-}
 
 // this will start our app
 Navigation.startTabBasedApp({
@@ -38,30 +19,34 @@ Navigation.startTabBasedApp({
       screen: 'example.SecondTabScreen',
       icon: require('../img/two.png'),
       selectedIcon: require('../img/two_selected.png'),
-      title: 'Screen Two'
-    },
-    {
-      label: 'Three',
-      screen: 'example.ThirdTabScreen',
-      icon: require('../img/three.png'),
-      selectedIcon: require('../img/three_selected.png'),
-      title: 'Screen Three',
+      title: 'Screen Two',
       navigatorStyle: {
-        navBarBackgroundColor: '#4dbce9',
-        navBarTextColor: '#ffff00',
-        navBarButtonColor: '#ffffff',
-        statusBarTextColorScheme: 'light'
+        tabBarBackgroundColor: '#4dbce9',
       }
     }
   ],
-  // tabsStyle: {
-  //   tabBarButtonColor: '#ffff00',
-  //   tabBarSelectedButtonColor: '#ff9900',
-  //   tabBarBackgroundColor: '#551A8B'
-  // },
   drawer: {
     left: {
       screen: 'example.SideMenu'
     }
-  }
+  },
+  portraitOnlyMode: true
 });
+//Navigation.startSingleScreenApp({
+//  screen: {
+//    screen: 'example.FirstTabScreen',
+//    title: 'Navigation',
+//    navigatorStyle: {
+//      navBarBackgroundColor: '#4dbce9',
+//      navBarTextColor: '#ffff00',
+//      navBarSubtitleTextColor: '#ff0000',
+//      navBarButtonColor: '#ffffff',
+//      statusBarTextColorScheme: 'light'
+//    }
+//  },
+//  drawer: {
+//    left: {
+//      screen: 'example.SideMenu'
+//    }
+//  }
+//});

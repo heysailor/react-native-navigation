@@ -1,179 +1,144 @@
 import React, {Component} from 'react';
-import {AppRegistry} from 'react-native';
+import {AppRegistry, NativeModules} from 'react-native';
+import _ from 'lodash';
+import PropRegistry from './PropRegistry';
 
-import Navigation from './Navigation';
-import utils from './utils';
+const NativeReactModule = NativeModules.NavigationReactModule;
 
-import {RctActivity} from 'react-native-navigation';
+function startApp(activityParams) {
+  savePassProps(activityParams);
+  NativeReactModule.startApp(activityParams);
+}
 
-const resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSource');
+function push(screenParams) {
+  savePassProps(screenParams);
+  NativeReactModule.push(screenParams);
+}
 
-function startSingleScreenApp(params) {
-  let screen = params.screen;
-  if (!screen.screen) {
-    console.error('startSingleScreenApp(params): screen must include a screen property');
-    return;
+function pop(screenParams) {
+  NativeReactModule.pop(screenParams);
+}
+
+function popToRoot(screenParams) {
+  NativeReactModule.popToRoot(screenParams);
+}
+
+function newStack(screenParams) {
+  savePassProps(screenParams);
+  NativeReactModule.newStack(screenParams);
+}
+
+function toggleTopBarVisible(screenInstanceID, visible, animated) {
+  NativeReactModule.setTopBarVisible(screenInstanceID, visible, animated);
+}
+
+function toggleBottomTabsVisible(visible, animated) {
+  NativeReactModule.setBottomTabsVisible(visible, animated);
+}
+
+function setScreenTitleBarTitle(screenInstanceID, title) {
+  NativeReactModule.setScreenTitleBarTitle(screenInstanceID, title);
+}
+
+function setScreenTitleBarSubtitle(screenInstanceID, subtitle) {
+  NativeReactModule.setScreenTitleBarSubtitle(screenInstanceID, subtitle);
+}
+
+function setScreenTitleBarButtons(screenInstanceID, navigatorEventID, rightButtons, leftButton) {
+  NativeReactModule.setScreenTitleBarButtons(screenInstanceID, navigatorEventID, rightButtons, leftButton);
+}
+
+function showModal(screenParams) {
+  savePassProps(screenParams);
+  NativeReactModule.showModal(screenParams);
+}
+
+function dismissTopModal() {
+  NativeReactModule.dismissTopModal();
+}
+
+function dismissAllModals() {
+  NativeReactModule.dismissAllModals();
+}
+
+function savePassProps(params) {
+  if (params.navigationParams && params.passProps) {
+    PropRegistry.save(params.navigationParams.screenInstanceID, params.passProps);
   }
 
-  addNavigatorParams(screen);
-  addNavigatorButtons(screen);
-  addNavigationStyleParams(screen);
-  screen.passProps = params.passProps;
-  RctActivity.startSingleScreenApp(screen);
-}
-
-function startTabBasedApp(params) {
-  if (!params.tabs) {
-    console.error('startTabBasedApp(params): params.tabs is required');
-    return;
+  if (params.screen && params.screen.passProps) {
+    PropRegistry.save(params.screen.navigationParams.screenInstanceID, params.screen.passProps);
   }
 
-  params.tabs.forEach(function(tab, idx) {
-    addNavigatorParams(tab, null, idx);
-    addNavigatorButtons(tab);
-    addNavigationStyleParams(tab);
-    if (tab.icon) {
-      const icon = resolveAssetSource(tab.icon);
-      if (icon) {
-        tab.icon = icon.uri;
+  if (_.get(params, 'screen.topTabs')) {
+    _.forEach(params.screen.topTabs, (tab) => savePassProps(tab));
+  }
+
+  if (params.topTabs) {
+    _.forEach(params.topTabs, (tab) => savePassProps(tab));
+  }
+
+  if (params.tabs) {
+    _.forEach(params.tabs, (tab) => {
+      if (!tab.passProps) {
+        tab.passProps = params.passProps;
       }
-    }
-    tab.passProps = params.passProps;
-  });
-
-  RctActivity.startTabBasedApp(params.tabs, params.tabsStyle);
-}
-
-function navigatorPush(navigator, params) {
-  addNavigatorParams(params, navigator);
-  addNavigatorButtons(params);
-  addNavigationStyleParams(params);
-  RctActivity.navigatorPush(params);
-}
-
-function navigatorSetButtons(navigator, navigatorEventID, params) {
-  if (params.rightButtons) {
-    params.rightButtons.forEach(function(button) {
-      if (button.icon) {
-        const icon = resolveAssetSource(button.icon);
-        if (icon) {
-          button.icon = icon.uri;
-        }
-      }
+      savePassProps(tab);
     });
   }
-  RctActivity.setNavigatorButtons(params);
-}
 
-function navigatorPop(navigator, params) {
-  addNavigatorParams(params, navigator);
-  RctActivity.navigatorPop(params);
-}
-
-function navigatorPopToRoot(navigator, params) {
-  RctActivity.navigatorPopToRoot({
-    navigatorID: navigator.navigatorID,
-    animated: !(params.animated !== false)
-  });
-}
-
-function navigatorResetTo(navigator, params) {
-  addNavigatorParams(params, navigator);
-  addNavigatorButtons(params);
-  addNavigationStyleParams(params);
-  RctActivity.navigatorResetTo(params);
-}
-
-function navigatorSetTabBadge(navigator, params) {
-  RctActivity.setTabBadge({
-    tabIndex: params.tabIndex,
-    badge: params.badge
-  });
-}
-
-function navigatorSetTitle(navigator, params) {
-  RctActivity.setNavigatorTitle(params);
-}
-
-function navigatorSwitchToTab(navigator, params) {
-  RctActivity.switchToTab({
-    tabIndex: params.tabIndex
-  });
-}
-
-function navigatorToggleNavBar(navigator, params) {
-  RctActivity.toggleNavigationBar({
-    hidden: params.to === 'hidden',
-    animated: !(params.animated === false)
-  });
-}
-
-function navigatorToggleTabs(navigator, params) {
-  RctActivity.toggleNavigatorTabs({
-    hidden: params.to === 'hidden',
-    animated: !(params.animated === false)
-  });
-}
-
-function showModal(params) {
-  addNavigatorParams(params);
-  addNavigatorButtons(params);
-  addNavigationStyleParams(params);
-  RctActivity.showModal(params);
-}
-
-function dismissModal() {
-  RctActivity.dismissModal();
-}
-
-function dismissAllModals(params) {
-  RctActivity.dismissAllModals(params.animationType);
-}
-
-function addNavigatorParams(screen, navigator = null, idx = '') {
-  screen.navigatorID = navigator ? navigator.navigatorID : utils.getRandomId() + '_nav' + idx;
-  screen.screenInstanceID = utils.getRandomId();
-  screen.navigatorEventID = screen.screenInstanceID + '_events';
-}
-
-function addNavigatorButtons(screen) {
-  const Screen = Navigation.getRegisteredScreen(screen.screen);
-  Object.assign(screen, Screen.navigatorButtons);
-
-  // Get image uri from image id
-  const rightButtons = screen.rightButtons ? screen.rightButtons : screen.navigatorButtons ?
-    screen.navigatorButtons.rightButtons : null;
-  if (rightButtons) {
-    rightButtons.forEach(function(button) {
-      if (button.icon) {
-        const icon = resolveAssetSource(button.icon);
-        if (icon) {
-          button.icon = icon.uri;
-        }
-      }
-    });
+  if (params.sideMenu) {
+    PropRegistry.save(params.sideMenu.navigationParams.screenInstanceID, params.sideMenu.passProps);
   }
 }
 
-function addNavigationStyleParams(screen) {
-  const Screen = Navigation.getRegisteredScreen(screen.screen);
-  screen.navigatorStyle = Screen.navigatorStyle;
+function toggleSideMenuVisible(animated) {
+  NativeReactModule.toggleSideMenuVisible(animated);
 }
 
-export default {
-  startTabBasedApp,
-  startSingleScreenApp,
-  navigatorPush,
-  navigatorPop,
-  navigatorPopToRoot,
-  navigatorResetTo,
+function setSideMenuVisible(animated, visible) {
+  NativeReactModule.setSideMenuVisible(animated, visible);
+}
+
+function selectBottomTabByNavigatorId(navigatorId) {
+  NativeReactModule.selectBottomTabByNavigatorId(navigatorId);
+}
+
+function selectBottomTabByTabIndex(index) {
+  NativeReactModule.selectBottomTabByTabIndex(index);
+}
+
+function setBottomTabBadgeByIndex(index, badge) {
+  NativeReactModule.setBottomTabBadgeByIndex(index, badge);
+}
+
+function setBottomTabBadgeByNavigatorId(navigatorId, badge) {
+  NativeReactModule.setBottomTabBadgeByNavigatorId(navigatorId, badge);
+}
+
+function showSnackbar(params) {
+  NativeReactModule.showSnackbar(params);
+}
+
+module.exports = {
+  startApp,
+  push,
+  pop,
+  popToRoot,
+  newStack,
+  toggleTopBarVisible,
+  toggleBottomTabsVisible,
+  setScreenTitleBarTitle,
+  setScreenTitleBarSubtitle,
+  setScreenTitleBarButtons,
   showModal,
-  dismissModal,
+  dismissTopModal,
   dismissAllModals,
-  navigatorSetButtons,
-  navigatorSetTabBadge,
-  navigatorSetTitle,
-  navigatorSwitchToTab,
-  navigatorToggleTabs,
-  navigatorToggleNavBar
-}
+  toggleSideMenuVisible,
+  setSideMenuVisible,
+  selectBottomTabByNavigatorId,
+  selectBottomTabByTabIndex,
+  setBottomTabBadgeByNavigatorId,
+  setBottomTabBadgeByIndex,
+  showSnackbar
+};

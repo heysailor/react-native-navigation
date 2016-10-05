@@ -2,11 +2,13 @@
     package="com.reactnativenavigation">
 
     <application>
-        <activity android:name="com.reactnativenavigation.activities.TabActivity" />
-        <activity android:name="com.reactnativenavigation.activities.BottomTabActivity"
-                  android:label=""/>
-        <activity android:name="com.reactnativenavigation.activities.SingleScreenActivity"
-                  android:label=""/>
+        <activity android:name=".controllers.NavigationActivity" />
+        <activity
+            android:name=".controllers.PortraitNavigationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.facebook.react.devsupport.DevSettingsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

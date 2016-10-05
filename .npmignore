@@ -1,11 +1,10 @@
-example/
-example-redux/
+example
+old-example-redux
 
 test/
 res/generated/
 
 .npmignore
-
 
 #################
 # from .gitignore:
@@ -154,11 +153,11 @@ fastlane/screenshots
 android/bin/
 android/gen/
 android/out/
+android/app/build/
 
 # Gradle files
 android/.gradle/
 android/build/
-android/*/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -211,9 +210,8 @@ project.xcworkspace
 # Android/IJ
 #
 .idea
-android/.idea
-android/.gradle
-android/local.properties
+.gradle
+local.properties
 
 # node.js
 #
@@ -225,3 +223,4 @@ buck-out/
 \.buckd/
 android/app/libs
 android/keystores/debug.keystore
+

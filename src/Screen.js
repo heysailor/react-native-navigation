@@ -1,36 +1,45 @@
+/*eslint-disable*/
 import React, {Component} from 'react';
 import {
   NativeAppEventEmitter,
   DeviceEventEmitter,
   Platform
 } from 'react-native';
-import platformSpecific from './platformSpecific';
+import platformSpecific from './deprecated/platformSpecificDeprecated';
 import Navigation from './Navigation';
 
 const _allNavigatorEventHandlers = {};
 
+const NavigationSpecific = {
+  push: platformSpecific.navigatorPush,
+  pop: platformSpecific.navigatorPop,
+  popToRoot: platformSpecific.navigatorPopToRoot,
+  resetTo: platformSpecific.navigatorResetTo
+};
+
 class Navigator {
-  constructor(navigatorID, navigatorEventID) {
+  constructor(navigatorID, navigatorEventID, screenInstanceID) {
     this.navigatorID = navigatorID;
+    this.screenInstanceID = screenInstanceID;
     this.navigatorEventID = navigatorEventID;
     this.navigatorEventHandler = null;
     this.navigatorEventSubscription = null;
   }
 
   push(params = {}) {
-    return platformSpecific.navigatorPush(this, params);
+    return NavigationSpecific.push(this, params);
   }
 
   pop(params = {}) {
-    return platformSpecific.navigatorPop(this, params);
+    return NavigationSpecific.pop(this, params);
   }
 
   popToRoot(params = {}) {
-    return platformSpecific.navigatorPopToRoot(this, params);
+    return NavigationSpecific.popToRoot(this, params);
   }
 
   resetTo(params = {}) {
-    return platformSpecific.navigatorResetTo(this, params);
+    return NavigationSpecific.resetTo(this, params);
   }
 
   showModal(params = {}) {
@@ -53,12 +62,24 @@ class Navigator {
     return Navigation.dismissLightBox(params);
   }
 
+  showInAppNotification(params = {}) {
+    return Navigation.showInAppNotification(params);
+  }
+
+  dismissInAppNotification(params = {}) {
+    return Navigation.dismissInAppNotification(params);
+  }
+
   setButtons(params = {}) {
     return platformSpecific.navigatorSetButtons(this, this.navigatorEventID, params);
   }
 
   setTitle(params = {}) {
     return platformSpecific.navigatorSetTitle(this, params);
+  }
+
+  setSubTitle(params = {}) {
+    return platformSpecific.navigatorSetSubtitle(this, params);
   }
 
   setTitleImage(params = {}) {
@@ -85,6 +106,10 @@ class Navigator {
     return platformSpecific.navigatorSwitchToTab(this, params);
   }
 
+  showSnackbar(params = {}) {
+    return platformSpecific.showSnackbar(this, params);
+  }
+
   setOnNavigatorEvent(callback) {
     this.navigatorEventHandler = callback;
     if (!this.navigatorEventSubscription) {
@@ -93,6 +118,7 @@ class Navigator {
       _allNavigatorEventHandlers[this.navigatorEventID] = (event) => this.onNavigatorEvent(event);
     }
   }
+
   handleDeepLink(params = {}) {
     if (!params.link) return;
     const event = {
@@ -121,11 +147,11 @@ class Navigator {
 export default class Screen extends Component {
   static navigatorStyle = {};
   static navigatorButtons = {};
-  
+
   constructor(props) {
     super(props);
     if (props.navigatorID) {
-      this.navigator = new Navigator(props.navigatorID, props.navigatorEventID);
+      this.navigator = new Navigator(props.navigatorID, props.navigatorEventID, props.screenInstanceID);
     }
   }
 
