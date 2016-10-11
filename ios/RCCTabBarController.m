@@ -25,9 +25,9 @@
 {
   self = [super init];
   if (!self) return nil;
-  
+
   self.tabBar.translucent = YES; // default
-  
+
   UIColor *buttonColor = nil;
   UIColor *selectedButtonColor = nil;
   NSDictionary *tabsStyle = props[@"style"];
@@ -41,7 +41,7 @@
       buttonColor = color;
       selectedButtonColor = color;
     }
-    
+
     NSString *tabBarSelectedButtonColor = tabsStyle[@"tabBarSelectedButtonColor"];
     if (tabBarSelectedButtonColor)
     {
@@ -49,7 +49,7 @@
       self.tabBar.tintColor = color;
       selectedButtonColor = color;
     }
-    
+
     NSString *tabBarBackgroundColor = tabsStyle[@"tabBarBackgroundColor"];
     if (tabBarBackgroundColor)
     {
@@ -94,19 +94,23 @@
     viewController.tabBarItem = [[UITabBarItem alloc] initWithTitle:title image:iconImage tag:0];
     viewController.tabBarItem.accessibilityIdentifier = tabItemLayout[@"props"][@"testID"];
     viewController.tabBarItem.selectedImage = iconImageSelected;
-    
+
+    if (!title) {
+      viewController.tabBarItem.imageInsets = UIEdgeInsetsMake(5.5, 0, -5.5, 0);
+    }
+
     if (buttonColor)
     {
       [viewController.tabBarItem setTitleTextAttributes:
        @{NSForegroundColorAttributeName : buttonColor} forState:UIControlStateNormal];
     }
-    
+
     if (selectedButtonColor)
     {
       [viewController.tabBarItem setTitleTextAttributes:
        @{NSForegroundColorAttributeName : selectedButtonColor} forState:UIControlStateSelected];
     }
-    
+
     // create badge
     NSObject *badge = tabItemLayout[@"props"][@"badge"];
     if (badge == nil || [badge isEqual:[NSNull null]])
@@ -136,7 +140,7 @@
       if (tabIndex)
       {
         int i = (int)[tabIndex integerValue];
-      
+
         if ([self.viewControllers count] > i)
         {
           viewController = [self.viewControllers objectAtIndex:i];
@@ -148,11 +152,11 @@
       {
         viewController = [[RCCManager sharedInstance] getControllerWithId:contentId componentType:contentType];
       }
-      
+
       if (viewController)
       {
         NSObject *badge = actionParams[@"badge"];
-        
+
         if (badge == nil || [badge isEqual:[NSNull null]])
         {
           viewController.tabBarItem.badgeValue = nil;
@@ -163,7 +167,7 @@
         }
       }
     }
-  
+
     if ([performAction isEqualToString:@"switchTo"])
     {
       UIViewController *viewController = nil;
@@ -171,7 +175,7 @@
       if (tabIndex)
       {
         int i = (int)[tabIndex integerValue];
-      
+
         if ([self.viewControllers count] > i)
         {
           viewController = [self.viewControllers objectAtIndex:i];
@@ -183,7 +187,7 @@
       {
         viewController = [[RCCManager sharedInstance] getControllerWithId:contentId componentType:contentType];
       }
-    
+
       if (viewController)
       {
         [self setSelectedViewController:viewController];
