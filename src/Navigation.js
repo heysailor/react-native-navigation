@@ -72,6 +72,19 @@ function _registerComponentRedux(screenID, generator, store, Provider, client) {
         })
       }
 
+      getChildContext() {
+        if (client) {
+          return {
+            client
+          }
+        }
+        return {};
+      }
+
+      static childContextTypes = {
+        client: React.PropTypes.object
+      }
+
       render() {
         return (
           <Provider store={store} client={client}>
